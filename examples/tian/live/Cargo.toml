@@ -1,0 +1,11 @@
+[package]
+name = "live"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = { version = "0.6.0", features = ["multipart"] } # Web framework that focuses on ergonomics and modularity.
+hyper = { version = "0.14.23", features = ["full"] } # A fast and correct HTTP library.
+tokio = { version = "1.22.0", features = ["full"] } # Event-driven, non-blocking I/O platform.
