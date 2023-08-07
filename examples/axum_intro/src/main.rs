@@ -1,20 +1,32 @@
 #![allow(unused)] // For beginning only
-
-use axum::extract::Path;
-use axum::extract::Query;
-use axum::response::{Html, IntoResponse};
+pub use self::error::{Error, Result};
+use axum::extract::{Query, Path};
+use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
+use axum::routing::get_service;
 use axum::Router;
 use serde::Deserialize;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
-use axum::routing::get_service;
+use axum::middleware;
+use tower_cookies::CookieManagerLayer;
+
+mod error;
+mod web;
+mod model;
 
 // cargo watch -q -c -w src -x run
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    // Initialize ModelContoller.
+    let mc = model::ModelContoller::new().await?;
+
     let routes_all = Router::new()
         .merge(routes_hello())
+        .merge(web::routes_login::routes())
+        .nest("/api", web::routes_tickets::routes())
+        .layer(middleware::map_response(main_repsonse_mapper))
+        .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
 
     // region:          --- Start Server
@@ -26,6 +38,16 @@ async fn main() {
         .await
         .unwrap();
     // endregion:       --- Start Server
+
+    Ok(())
+}
+
+async fn main_repsonse_mapper(res: Response) -> Response {
+    println!("--->> {:<12} - main_reponse_mapper", "RES_MAPPER");
+
+    println!("after");
+
+    res
 }
 
 fn routes_static() -> Router {
